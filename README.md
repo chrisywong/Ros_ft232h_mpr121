@@ -1,4 +1,4 @@
-# Ros_ft232h_mpr121
+# ros_ft232h_mpr121 (ROS package name: touch_pkg)
 This project provides the necessary package to use up to 4 Mpr121 touch sensors connected to the Ft232h board with Ros
 
 To use that source code you must have ROS version which use python3 or configure yours ([if you use ROS Melodic or earlier](https://dhanoopbhaskar.com/blog/2020-05-07-working-with-python-3-in-ros-kinetic-or-melodic/)) it to allow to work with
@@ -26,5 +26,7 @@ the necessary installations are provided by Adafruit
 1. Create your workspace
 2. You have to do " export BLINKA_FT232H=1 "
 
+So as not to execute this line every time you want to run your code add it to your devel/setup.bash or your ./bashrc file
 
-   So as not to execute this line every time you want to run your code add it to your devel/setup.bash or your ./bashrc file
+Code written by: Nzengi Jonathan Mifundu
+Maintained by: Chris Yee WONG
