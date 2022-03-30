@@ -8,14 +8,39 @@ import time
 import adafruit_mpr121
 import copy
 import numpy as np
+import sys
 
 from joblib import Parallel, delayed, parallel_backend
 
+global flag_leftonly, flag_rightonly
+flag_leftonly = False
+flag_rightonly = False
+
+try: #use command line arguments to
+	if sys.argv[1] == '--leftonly':
+		flag_leftonly = True
+		print('[mpr121.py] Only touch sensors on LEFT arm are activated')
+	elif sys.argv[1] == '--rightonly':
+		flag_rightonly = True
+		print('[mpr121.py] Only touch sensors on RIGHT arm are activated')
+	else:
+		print('[mpr121.py] Argument not understood')
+except:
+	print('[mpr121.py] No arguments given, reading touch sensors on both arms')
+
+
 def readmpr(cap, j, msg):
+	global flag_leftonly, flag_rightonly
 	tM=mpr121Msg()
 	# print("Reading %i", j)
 	for i in range(12):
-		tM.val_raw=cap[j][i].raw_value
+		if flag_leftonly == True and (j == 0 or j == 1): #if read LEFT only, then RIGHT sensors are not read (since this step takes time)
+			tM.val_raw = ref_value[j,i]
+		elif flag_rightonly == True and (j == 2 or j == 3): #if read RIGHT only, then LEFT sensors are not read (since this step takes time)
+			tM.val_raw = ref_value[j,i]
+		else:
+			tM.val_raw = cap[j][i].raw_value #this is the step that takes a while
+
 		delta=ref_value[j,i]-tM.val_raw
 		if (delta>10):
 			tM.touchval=True
@@ -75,6 +100,13 @@ def touch():
 			# Parallel(n_jobs=2)(delayed(readmpr)(cap, j, msg) for j in range(4))
 
 			rospy.loginfo('[mpr121.py] Sampling time: %f', time.time() - t_last)
+
+			touchsensmsg = ''
+			for sensor in msg.touchSens:
+				if sensor.touchval == True:
+					touchsensmsg = touchsensmsg + str(sensor.sensor_id)+"-"+str(sensor.channel_id)+" "
+			rospy.loginfo('[mpr121.py] Touched sensors: %s', touchsensmsg)
+
 			t_last = time.time()
 			pub.publish(msg)
 			rate.sleep()
